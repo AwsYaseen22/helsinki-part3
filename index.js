@@ -1,3 +1,4 @@
+const { response } = require("express");
 const express = require("express");
 
 const app = express();
@@ -43,7 +44,12 @@ app.get("/api/persons", (request, response) => {
 
 app.get("/api/persons/:id", (request, response) => {
   const id = +request.params.id;
-  response.json(persons.filter((p) => p.id === id));
+  const person = persons.filter((p) => p.id === id);
+  if (person.length) {
+    response.json(person);
+  } else {
+    response.status(404).end();
+  }
 });
 
 const PORT = 3001;
