@@ -1,12 +1,17 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const mongoose = require("mongoose");
+require("dotenv").config();
+
+const dbUrl = process.env.MONGODB_URI;
+const Person = require("./models/person");
 
 const app = express();
 app.use(cors());
 app.use(express.static("build"));
 app.use(express.json());
-// app.use(morgan("tiny"));
+
 morgan.token("body", function getBody(req) {
   return JSON.stringify(req.body);
 });
@@ -49,7 +54,9 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
@@ -99,7 +106,15 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port: ${PORT}`);
-});
+const PORT = process.env.PORT;
+// as per the requirement by cyclic conne to the DB then to the server
+mongoose
+  .connect(dbUrl)
+  .then((result) => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port: ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log("error with connection to the url: ", dbUrl);
+  });
