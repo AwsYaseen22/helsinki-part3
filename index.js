@@ -78,26 +78,18 @@ app.delete("/api/persons/:id", (request, response) => {
 app.post("/api/persons", (request, response) => {
   const name = request.body.name;
   const number = request.body.number;
-  const found = persons.find((p) => p.name === name);
-  console.log(found);
   if (!name || !number) {
     return response.status(400).json({
       error: "Please provide name and number",
     });
   }
-  if (found) {
-    return response.status(400).json({
-      error: "name must be unique",
-    });
-  }
-  const id = Math.ceil(Math.random() * 1000000);
-  const person = {
-    id: id,
+  const person = new Person({
     name: name,
     number: number,
-  };
-  persons = persons.concat(person);
-  return response.json(person);
+  });
+  person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 const unknownEndpoint = (request, response) => {
@@ -111,6 +103,7 @@ const PORT = process.env.PORT;
 mongoose
   .connect(dbUrl)
   .then((result) => {
+    console.log("connected to the MongoDB");
     app.listen(PORT, () => {
       console.log(`Server running on port: ${PORT}`);
     });
