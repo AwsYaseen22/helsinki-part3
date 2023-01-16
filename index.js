@@ -69,15 +69,17 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
-  Person.findByIdAndRemove(id).then((result) => {
-    if (result) {
-      response.status(204).end();
-    } else {
-      response.status(400).end();
-    }
-  });
+  Person.findByIdAndRemove(id)
+    .then((result) => {
+      if (result) {
+        response.status(204).end();
+      } else {
+        response.status(400).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (request, response) => {
@@ -96,6 +98,14 @@ app.post("/api/persons", (request, response) => {
     response.json(savedPerson);
   });
 });
+
+const errorHandler = (error, request, response, next) => {
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+  next(error);
+};
+app.use(errorHandler);
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
