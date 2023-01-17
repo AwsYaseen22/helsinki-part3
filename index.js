@@ -87,30 +87,39 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const name = request.body.name;
   const number = request.body.number;
-  if (!name || !number) {
-    return response.status(400).json({
-      error: "Please provide name and number",
-    });
-  }
+  // data validation will handled by scehma validator
+  // if (!name || !number) {
+  //   return response.status(400).json({
+  //     error: "Please provide name and number",
+  //   });
+  // }
   const person = new Person({
     name: name,
     number: number,
   });
-  person.save().then((savedPerson) => {
-    response.json(savedPerson);
-  });
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => next(error));
 });
 
 app.put("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
   const body = request.body;
   const person = {
+    name: body.name,
     number: body.number,
   };
-  Person.findByIdAndUpdate(id, person, { new: true })
+  Person.findByIdAndUpdate(id, person, {
+    new: true,
+    runValidators: true,
+    context: "query",
+  })
     .then((updatedPerson) => {
       response.json(updatedPerson);
     })
@@ -120,6 +129,8 @@ app.put("/api/persons/:id", (request, response, next) => {
 const errorHandler = (error, request, response, next) => {
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
   next(error);
 };
