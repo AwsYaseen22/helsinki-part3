@@ -91,11 +91,6 @@ app.post("/api/persons", (request, response, next) => {
   const name = request.body.name;
   const number = request.body.number;
   // data validation will handled by scehma validator
-  // if (!name || !number) {
-  //   return response.status(400).json({
-  //     error: "Please provide name and number",
-  //   });
-  // }
   const person = new Person({
     name: name,
     number: number,
