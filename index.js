@@ -143,14 +143,12 @@ const PORT = process.env.PORT
 // as per the requirement by cyclic conne to the DB then to the server
 mongoose
   .connect(dbUrl)
-  .then((result) => {
+  .then(() => {
     console.log('connected to the MongoDB')
-    console.log(result)
     app.listen(PORT, () => {
       console.log(`Server running on port: ${PORT}`)
     })
   })
-  .catch((err) => {
-    console.log(err)
+  .catch(() => {
     console.log('error with connection to the url: ', dbUrl)
   })
